@@ -151,7 +151,7 @@ plot_species_country_comparison(
 
 ## Data source
 
-FAO ({{year}}). *Global Capture Production*. Fisheries and Aquaculture
+FAO (2026). *Global Capture Production*. Fisheries and Aquaculture
 Division. Available at:
 <https://www.fao.org/fishery/en/collection/capture>
 
