@@ -27,7 +27,7 @@ remotes::install_github("https://github.com/clarajegousse/fishR")
 ### Download and load data
 
 ```{r}
-library(fishr)
+library(fishR)
 
 # Downloads to a user cache directory; skips if already present
 data_dir <- download_fao_capture()
