@@ -1,0 +1,43 @@
+---
+output: github_document
+---
+
+# fishr
+
+Tools to download, clean, and analyse FAO capture fisheries data.
+
+## Installation
+
+```r
+# install.packages("remotes")
+remotes::install_github("YOUR_GITHUB_USERNAME/fishr")
+```
+
+## Example
+
+```{r}
+library(fishr)
+
+# Download data
+data_dir <- download_fao_capture()
+
+# Load cleaned dataset
+data <- load_fao_capture(path = data_dir)
+
+# Plot
+plot_top_species_country(
+  data = data,
+  country = "Iceland",
+  year = 2023,
+  n = 10
+)
+```
+
+
+## Data source
+
+FAO Global Capture Production dataset.
+
+## Status
+
+VERY Early development. Functions and structure may change.
