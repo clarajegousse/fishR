@@ -2,7 +2,7 @@
 output: github_document
 ---
 
-# fishr
+# fishR
 
 An R package for downloading, cleaning, and visualising FAO global capture fisheries data.
 
@@ -10,7 +10,7 @@ An R package for downloading, cleaning, and visualising FAO global capture fishe
 
 ```r
 # install.packages("remotes")
-remotes::install_github("https://github.com/clarajegousse/fishR")
+remotes::install_github("YOUR_GITHUB_USERNAME/fishr")
 ```
 
 ## Overview
@@ -24,6 +24,7 @@ remotes::install_github("https://github.com/clarajegousse/fishR")
 | `plot_top_species_country()` | Bar chart of top *n* species for a country in a given year |
 | `plot_species_trend()` | Time series of catch for one or more species in a country |
 | `plot_species_country_comparison()` | Compare catch of one species across countries (snapshot or trend) |
+| `plot_decadal_average()` | Bar chart of average annual catch per decade for a species in a country |
 
 ## Usage
 
@@ -115,6 +116,18 @@ plot_species_country_comparison(
   species   = "Atlantic cod",
   countries = c("Iceland", "Norway", "Canada"),
   facet     = TRUE
+)
+```
+
+### Decadal average catch
+
+Useful for identifying long-term structural shifts in catch levels.
+
+```{r}
+plot_decadal_average(
+  data    = data,
+  country = "Iceland",
+  species = "Atlantic cod"
 )
 ```
 

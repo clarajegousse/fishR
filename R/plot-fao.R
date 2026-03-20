@@ -12,7 +12,7 @@ plot_top_species_country <- function(data,
                                      country,
                                      year,
                                      n = 10,
-                                     fill = "#0a4875") {
+                                     fill = "black") {
 
   required_cols <- c("Country_Name_En", "PERIOD", "Sp_Name_En", "VALUE")
 
@@ -72,8 +72,7 @@ plot_top_species_country <- function(data,
       x = "Catch (tonnes)",
       y = NULL,
       caption = "Source: FAO capture production data"
-    ) +
-    ggplot2::theme_minimal()
+    )
 }
 
 
@@ -86,7 +85,7 @@ plot_top_species_country <- function(data,
 #'   faceted panels. If `FALSE`, overlay lines with colour. Ignored when
 #'   a single species is supplied. Defaults to `FALSE`.
 #' @param colour Line colour (single species) or palette start colour
-#'   (multiple species). Defaults to `"#0a4875"`.
+#'   (multiple species). Defaults to `"black"`.
 #'
 #' @return A ggplot object.
 #' @export
@@ -94,7 +93,7 @@ plot_species_trend <- function(data,
                                country,
                                species,
                                facet = FALSE,
-                               colour = "#0a4875") {
+                               colour = "black") {
 
   required_cols <- c("Country_Name_En", "PERIOD", "Sp_Name_En", "VALUE")
 
@@ -169,7 +168,6 @@ plot_species_trend <- function(data,
       colour   = NULL,
       caption  = "Source: FAO capture production data"
     ) +
-    ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = "bottom")
 
   if (multi && facet) {
@@ -302,7 +300,7 @@ plot_species_country_comparison <- function(data,
           y = forcats::fct_reorder(.data$country, .data$total_tonn)
         )
       ) +
-        ggplot2::geom_col(fill = "#0a4875") +
+        ggplot2::geom_col(fill = "black") +
         ggplot2::scale_x_continuous(labels = scales::label_comma()) +
         ggplot2::labs(
           title    = paste("Catch of", species, "by country in", year),
@@ -310,8 +308,7 @@ plot_species_country_comparison <- function(data,
           x        = "Catch (tonnes)",
           y        = NULL,
           caption  = "Source: FAO capture production data"
-        ) +
-        ggplot2::theme_minimal()
+        )
     )
   }
 
@@ -336,7 +333,6 @@ plot_species_country_comparison <- function(data,
       colour   = NULL,
       caption  = "Source: FAO capture production data"
     ) +
-    ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = "bottom")
 
   if (facet) {
@@ -344,4 +340,95 @@ plot_species_country_comparison <- function(data,
   }
 
   p
+}
+
+#' Plot decadal average catch for a species in a country
+#'
+#' Aggregates catch data into decades and plots the average annual catch
+#' per decade as a bar chart. Useful for identifying long-term trends
+#' and structural shifts in catch levels.
+#'
+#' Decades are labelled by their starting year (e.g. 1990 = 1990--1999).
+#' Incomplete decades (i.e. the current decade) are included but reflect
+#' fewer years of data.
+#'
+#' @param data A data frame returned by `load_fao_capture()`.
+#' @param country Country name in English, matching `Country_Name_En`.
+#' @param species Species name in English, matching `Sp_Name_En`.
+#' @param fill Fill colour for bars. Defaults to `"black"`.
+#'
+#' @return A ggplot object.
+#' @export
+plot_decadal_average <- function(data,
+                                 country,
+                                 species,
+                                 fill = "black") {
+
+  required_cols <- c("Country_Name_En", "PERIOD", "Sp_Name_En", "VALUE")
+  missing_cols <- setdiff(required_cols, names(data))
+  if (length(missing_cols) > 0) {
+    stop(
+      "Missing required columns: ",
+      paste(missing_cols, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  if (!is.character(country) || length(country) != 1 || is.na(country)) {
+    stop("`country` must be a single character string.", call. = FALSE)
+  }
+
+  if (!is.character(species) || length(species) != 1 || is.na(species)) {
+    stop("`species` must be a single character string.", call. = FALSE)
+  }
+
+  data_plot <- data |>
+    dplyr::filter(
+      .data$Country_Name_En == country,
+      .data$Sp_Name_En == species,
+      !is.na(.data$PERIOD),
+      !is.na(.data$VALUE)
+    ) |>
+    dplyr::group_by(year = .data$PERIOD) |>
+    dplyr::summarise(
+      annual_catch = sum(.data$VALUE, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    dplyr::mutate(
+      decade = floor(.data$year / 10) * 10
+    ) |>
+    dplyr::group_by(.data$decade) |>
+    dplyr::summarise(
+      avg_catch  = mean(.data$annual_catch, na.rm = TRUE),
+      n_years    = dplyr::n(),
+      .groups    = "drop"
+    ) |>
+    dplyr::mutate(
+      decade_label = paste0(.data$decade, "s")
+    )
+
+  if (nrow(data_plot) == 0) {
+    stop(
+      "No data found for country = '", country,
+      "' and species = '", species, "'.",
+      call. = FALSE
+    )
+  }
+
+  ggplot2::ggplot(
+    data_plot,
+    ggplot2::aes(
+      x = factor(.data$decade_label),
+      y = .data$avg_catch
+    )
+  ) +
+    ggplot2::geom_col(fill = fill) +
+    ggplot2::scale_y_continuous(labels = scales::label_comma()) +
+    ggplot2::labs(
+      title    = paste("Decadal average catch:", species),
+      subtitle = country,
+      x        = NULL,
+      y        = "Average annual catch (tonnes)",
+      caption  = "Source: FAO capture production data"
+    )
 }

@@ -1,5 +1,5 @@
 
-# fishr
+# fishR
 
 An R package for downloading, cleaning, and visualising FAO global
 capture fisheries data.
@@ -8,7 +8,7 @@ capture fisheries data.
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("https://github.com/clarajegousse/fishR")
+remotes::install_github("YOUR_GITHUB_USERNAME/fishr")
 ```
 
 ## Overview
@@ -25,6 +25,7 @@ with minimal friction.
 | `plot_top_species_country()` | Bar chart of top *n* species for a country in a given year |
 | `plot_species_trend()` | Time series of catch for one or more species in a country |
 | `plot_species_country_comparison()` | Compare catch of one species across countries (snapshot or trend) |
+| `plot_decadal_average()` | Bar chart of average annual catch per decade for a species in a country |
 
 ## Usage
 
@@ -36,6 +37,8 @@ library(fishR)
 # Downloads to a user cache directory; skips if already present
 data_dir <- download_fao_capture()
 ```
+
+    ## Data already available at: /Users/clara/Library/Application Support/org.R-project.R/R/fishr/Capture_2025.1.0
 
 ``` r
 # Returns a joined tibble ready for analysis
@@ -78,11 +81,11 @@ plot_species_trend(
 )
 ```
 
-    ## Warning in ggplot2::geom_line(colour = if (!multi || facet) colour else NULL, : Ignoring empty aesthetic:
-    ## `colour`.
+    ## Warning in ggplot2::geom_line(colour = if (!multi || facet) colour else NULL, : Ignoring empty
+    ## aesthetic: `colour`.
 
-    ## Warning in ggplot2::geom_point(colour = if (!multi || facet) colour else NULL, : Ignoring empty aesthetic:
-    ## `colour`.
+    ## Warning in ggplot2::geom_point(colour = if (!multi || facet) colour else NULL, : Ignoring empty
+    ## aesthetic: `colour`.
 
 ![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
@@ -149,9 +152,23 @@ plot_species_country_comparison(
 
 ![](README_files/figure-gfm/unnamed-chunk-6-4.png)<!-- -->
 
+### Decadal average catch
+
+Useful for identifying long-term structural shifts in catch levels.
+
+``` r
+plot_decadal_average(
+  data    = data,
+  country = "Iceland",
+  species = "Atlantic cod"
+)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
 ## Data source
 
-FAO (2026). *Global Capture Production*. Fisheries and Aquaculture
+FAO ({{year}}). *Global Capture Production*. Fisheries and Aquaculture
 Division. Available at:
 <https://www.fao.org/fishery/en/collection/capture>
 
