@@ -432,3 +432,119 @@ plot_decadal_average <- function(data,
       caption  = "Source: FAO capture production data"
     )
 }
+
+
+#' Plot global catch of a species with top countries and rest of the world
+#'
+#' Produces a stacked area chart showing the total global catch of a species
+#' over time. The top \code{n} countries (by total catch over the full period)
+#' are shown in distinct colours; all remaining countries are aggregated into
+#' a single `"Rest of the World"` group shown in grey. This allows both
+#' overall catch trends and shifts in country-level contributions to be read
+#' from a single plot.
+#'
+#' @param data A data frame returned by `load_fao_capture()`, optionally
+#'   passed through `clean_country_names()`.
+#' @param species Species name in English, matching `Sp_Name_En`.
+#' @param n Number of top countries to highlight. Defaults to `5`.
+#' @param rest_colour Fill colour for the "Rest of the World" group.
+#'   Defaults to `"grey70"`.
+#'
+#' @return A ggplot object.
+#' @export
+plot_species_global_catch <- function(data,
+                                      species,
+                                      n           = 5,
+                                      rest_colour = "grey70") {
+
+  required_cols <- c("Country_Name_En", "PERIOD", "Sp_Name_En", "VALUE")
+  missing_cols <- setdiff(required_cols, names(data))
+  if (length(missing_cols) > 0) {
+    stop(
+      "Missing required columns: ",
+      paste(missing_cols, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  if (!is.character(species) || length(species) != 1 || is.na(species)) {
+    stop("`species` must be a single character string.", call. = FALSE)
+  }
+
+  if (!is.numeric(n) || length(n) != 1 || is.na(n) || n <= 0) {
+    stop("`n` must be a single positive number.", call. = FALSE)
+  }
+
+  # ---- filter to species ----
+  data_sp <- data |>
+    dplyr::filter(
+      .data$Sp_Name_En == species,
+      !is.na(.data$Country_Name_En),
+      !is.na(.data$VALUE),
+      !is.na(.data$PERIOD)
+    )
+
+  if (nrow(data_sp) == 0) {
+    stop("No data found for species = '", species, "'.", call. = FALSE)
+  }
+
+  # ---- identify top n countries by total catch over full period ----
+  top_countries <- data_sp |>
+    dplyr::group_by(.data$Country_Name_En) |>
+    dplyr::summarise(total = sum(.data$VALUE, na.rm = TRUE), .groups = "drop") |>
+    dplyr::slice_max(.data$total, n = n, with_ties = FALSE) |>
+    dplyr::pull(.data$Country_Name_En)
+
+  # ---- aggregate by year and country group ----
+  data_plot <- data_sp |>
+    dplyr::mutate(
+      country_group = dplyr::if_else(
+        .data$Country_Name_En %in% top_countries,
+        .data$Country_Name_En,
+        "Rest of the World"
+      )
+    ) |>
+    dplyr::group_by(.data$country_group, year = .data$PERIOD) |>
+    dplyr::summarise(
+      total_tonn = sum(.data$VALUE, na.rm = TRUE),
+      .groups    = "drop"
+    )
+
+  # ---- order factor levels: top countries first, rest of world last ----
+  country_levels <- c(top_countries, "Rest of the World")
+
+  data_plot <- data_plot |>
+    dplyr::mutate(
+      country_group = factor(.data$country_group, levels = country_levels)
+    )
+
+  # ---- build colour scale ----
+  # Use ggplot2 default discrete palette for top countries, grey for rest
+  default_colours <- scales::hue_pal()(n)
+  colour_values <- c(
+    stats::setNames(default_colours, top_countries),
+    "Rest of the World" = rest_colour
+  )
+
+  # ---- plot ----
+  ggplot2::ggplot(
+    data_plot,
+    ggplot2::aes(
+      x    = .data$year,
+      y    = .data$total_tonn,
+      fill = .data$country_group
+    )
+  ) +
+    ggplot2::geom_area(colour = "white", linewidth = 0.2) +
+    ggplot2::scale_fill_manual(values = colour_values) +
+    ggplot2::scale_y_continuous(labels = scales::label_comma()) +
+    ggplot2::labs(
+      title    = paste("Global catch:", species),
+      subtitle = paste("Top", n, "countries by total catch highlighted"),
+      x        = NULL,
+      y        = "Catch (tonnes)",
+      fill     = NULL,
+      caption  = "Source: FAO capture production data"
+    ) +
+    ggplot2::theme(legend.position = "bottom")
+}

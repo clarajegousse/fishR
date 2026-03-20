@@ -2,7 +2,7 @@
 output: github_document
 ---
 
-# fishR
+# fishr
 
 An R package for downloading, cleaning, and visualising FAO global capture fisheries data.
 
@@ -21,10 +21,12 @@ remotes::install_github("YOUR_GITHUB_USERNAME/fishr")
 |---|---|
 | `download_fao_capture()` | Downloads and extracts the FAO capture ZIP to a local cache |
 | `load_fao_capture()` | Reads and joins quantity, country, species, and area tables |
+| `clean_country_names()` | Replaces verbose FAO country names with short/common equivalents |
 | `plot_top_species_country()` | Bar chart of top *n* species for a country in a given year |
 | `plot_species_trend()` | Time series of catch for one or more species in a country |
 | `plot_species_country_comparison()` | Compare catch of one species across countries (snapshot or trend) |
 | `plot_decadal_average()` | Bar chart of average annual catch per decade for a species in a country |
+| `plot_species_global_catch()` | Stacked area chart of global catch with top *n* countries highlighted |
 
 ## Usage
 
@@ -38,6 +40,9 @@ data_dir <- download_fao_capture()
 
 # Returns a joined tibble ready for analysis
 data <- load_fao_capture(path = data_dir)
+
+# Optionally add short/common country names
+data <- clean_country_names(data)
 ```
 
 ### Top species in a country (single year)
@@ -128,6 +133,26 @@ plot_decadal_average(
   data    = data,
   country = "Iceland",
   species = "Atlantic cod"
+)
+```
+
+### Global catch with top countries highlighted
+
+Shows total global catch over time for a species, with the top *n* countries
+in distinct colours and all remaining countries aggregated as "Rest of the World" in grey.
+Useful for reading both overall trends and shifts in country-level contributions simultaneously.
+
+```{r}
+plot_species_global_catch(
+  data    = data,
+  species = "Skipjack tuna",
+  n       = 5
+)
+
+plot_species_global_catch(
+  data    = data,
+  species = "Capelin",
+  n       = 5
 )
 ```
 
