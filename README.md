@@ -37,8 +37,6 @@ library(fishR)
 data_dir <- download_fao_capture()
 ```
 
-    ## Data already available at: /Users/clara/Library/Application Support/org.R-project.R/R/fishr/Capture_2025.1.0
-
 ``` r
 # Returns a joined tibble ready for analysis
 data <- load_fao_capture(path = data_dir)
