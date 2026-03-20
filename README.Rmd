@@ -1,43 +1,125 @@
----
-output: github_document
----
 
 # fishr
 
-Tools to download, clean, and analyse FAO capture fisheries data.
+An R package for downloading, cleaning, and visualising FAO global capture fisheries data.
 
 ## Installation
 
 ```r
 # install.packages("remotes")
-remotes::install_github("YOUR_GITHUB_USERNAME/fishr")
+remotes::install_github("https://github.com/clarajegousse/fishR")
 ```
 
-## Example
+## Overview
+
+`fishr` wraps the [FAO Global Capture Production dataset](https://www.fao.org/fisheries/en/) with a small set of functions to get you from raw data to analysis-ready tibbles and plots with minimal friction.
+
+| Function | What it does |
+|---|---|
+| `download_fao_capture()` | Downloads and extracts the FAO capture ZIP to a local cache |
+| `load_fao_capture()` | Reads and joins quantity, country, species, and area tables |
+| `plot_top_species_country()` | Bar chart of top *n* species for a country in a given year |
+| `plot_species_trend()` | Time series of catch for one or more species in a country |
+| `plot_species_country_comparison()` | Compare catch of one species across countries (snapshot or trend) |
+
+## Usage
+
+### Download and load data
 
 ```{r}
 library(fishr)
 
-# Download data
+# Downloads to a user cache directory; skips if already present
 data_dir <- download_fao_capture()
 
-# Load cleaned dataset
+# Returns a joined tibble ready for analysis
 data <- load_fao_capture(path = data_dir)
+```
 
-# Plot
+### Top species in a country (single year)
+
+```{r}
 plot_top_species_country(
-  data = data,
+  data    = data,
   country = "Iceland",
-  year = 2023,
-  n = 10
+  year    = 2023,
+  n       = 10
 )
 ```
 
+### Catch trend over time (single species)
+
+```{r}
+plot_species_trend(
+  data    = data,
+  country = "Iceland",
+  species = "Atlantic cod"
+)
+```
+
+### Catch trend — multiple species, overlapping lines
+
+```{r}
+plot_species_trend(
+  data    = data,
+  country = "Iceland",
+  species = c("Atlantic cod", "Capelin", "Atlantic herring"),
+  facet   = FALSE
+)
+```
+
+### Catch trend — multiple species, faceted panels
+
+Useful when species have very different catch magnitudes.
+
+```{r}
+plot_species_trend(
+  data    = data,
+  country = "Iceland",
+  species = c("Atlantic cod", "Capelin", "Atlantic herring"),
+  facet   = TRUE
+)
+```
+
+### Compare catch across countries
+
+```{r}
+# Bar chart — top 10 countries for a species in a single year
+plot_species_country_comparison(
+  data    = data,
+  species = "Atlantic cod",
+  year    = 2023
+)
+
+# Bar chart — specific countries only
+plot_species_country_comparison(
+  data      = data,
+  species   = "Atlantic cod",
+  countries = c("Iceland", "Norway", "Canada"),
+  year      = 2023
+)
+
+# Time series — top 5 countries, overlapping lines
+plot_species_country_comparison(
+  data    = data,
+  species = "Atlantic cod",
+  n       = 5
+)
+
+# Time series — specific countries, faceted panels
+plot_species_country_comparison(
+  data      = data,
+  species   = "Atlantic cod",
+  countries = c("Iceland", "Norway", "Canada"),
+  facet     = TRUE
+)
+```
 
 ## Data source
 
-FAO Global Capture Production dataset.
+FAO ({{year}}). *Global Capture Production*. Fisheries and Aquaculture Division.
+Available at: https://www.fao.org/fishery/en/collection/capture
 
 ## Status
 
-VERY Early development. Functions and structure may change.
+Early development — functions and data structure may change between versions.
