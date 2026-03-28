@@ -8,7 +8,7 @@ capture fisheries data.
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("YOUR_GITHUB_USERNAME/fishr")
+remotes::install_github("https://github.com/clarajegousse/fishR/fishr")
 ```
 
 ## Overview

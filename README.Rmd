@@ -10,7 +10,7 @@ An R package for downloading, cleaning, and visualising FAO global capture fishe
 
 ```r
 # install.packages("remotes")
-remotes::install_github("YOUR_GITHUB_USERNAME/fishr")
+remotes::install_github("https://github.com/clarajegousse/fishR")
 ```
 
 ## Overview

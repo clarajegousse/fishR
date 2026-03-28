@@ -4,7 +4,7 @@
 \alias{plot_top_species_country}
 \title{Plot top captured species for a selected country}
 \usage{
-plot_top_species_country(data, country, year, n = 10, fill = "#0a4875")
+plot_top_species_country(data, country, year, n = 10, fill = "black")
 }
 \arguments{
 \item{data}{A data frame returned by \code{load_fao_capture()}.}
